@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUXE — Premium Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --dark: #1A1612;
+    --gold: #C9A84C;
+    --gold-light: #E8D5A3;
+    --rust: #8B4513;
+    --warm-gray: #6B6560;
+    --border: rgba(26,22,18,0.12);
+    --surface: #FDFAF4;
+    --badge-red: #C0392B;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--dark); overflow-x:hidden; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:var(--cream); }
+  ::-webkit-scrollbar-thumb { background:var(--gold); border-radius:3px; }
+
+  /* ── TOAST ── */
+  #toast { position:fixed; bottom:30px; right:30px; background:var(--dark); color:var(--cream); padding:14px 22px; border-radius:4px; font-size:.85rem; letter-spacing:.04em; opacity:0; transform:translateY(10px); transition:.3s; z-index:9999; pointer-events:none; border-left:3px solid var(--gold); }
+  #toast.show { opacity:1; transform:translateY(0); }
+
+  /* ── TOP BAR ── */
+  .topbar { background:var(--dark); color:var(--cream); text-align:center; padding:9px; font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; }
+  .topbar span { color:var(--gold); }
+
+  /* ── HEADER ── */
+  header { background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:900; }
+  .header-inner { max-width:1400px; margin:auto; padding:0 40px; height:72px; display:flex; align-items:center; justify-content:space-between; gap:24px; }
+  .logo { font-family:'Cormorant Garamond',serif; font-size:1.9rem; font-weight:600; letter-spacing:.18em; text-decoration:none; color:var(--dark); }
+  .logo span { color:var(--gold); }
+  nav { display:flex; gap:32px; }
+  nav a { text-decoration:none; color:var(--dark); font-size:.82rem; letter-spacing:.1em; text-transform:uppercase; font-weight:500; position:relative; padding-bottom:2px; transition:.2s; }
+  nav a::after { content:''; position:absolute; bottom:0; left:0; width:0; height:1px; background:var(--gold); transition:.3s; }
+  nav a:hover::after, nav a.active::after { width:100%; }
+  .header-actions { display:flex; align-items:center; gap:20px; }
+  .icon-btn { background:none; border:none; cursor:pointer; color:var(--dark); padding:8px; position:relative; transition:.2s; display:flex; align-items:center; justify-content:center; }
+  .icon-btn:hover { color:var(--gold); }
+  .badge { position:absolute; top:3px; right:3px; background:var(--badge-red); color:#fff; font-size:.6rem; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; }
+  .search-bar { display:flex; align-items:center; background:#F0EBE1; border:1px solid var(--border); border-radius:2px; overflow:hidden; }
+  .search-bar input { border:none; background:none; padding:8px 14px; font-family:inherit; font-size:.82rem; color:var(--dark); outline:none; width:200px; }
+  .search-bar button { background:var(--gold); border:none; padding:8px 14px; cursor:pointer; color:white; transition:.2s; }
+  .search-bar button:hover { background:var(--dark); }
+
+  /* ── MOBILE MENU ── */
+  .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:8px; }
+  .hamburger span { width:22px; height:1.5px; background:var(--dark); transition:.3s; display:block; }
+
+  /* ── HERO ── */
+  .hero { background:var(--dark); color:var(--cream); min-height:88vh; display:flex; align-items:center; position:relative; overflow:hidden; }
+  .hero-bg { position:absolute; inset:0; background:radial-gradient(ellipse at 70% 50%, rgba(201,168,76,.15) 0%, transparent 60%), linear-gradient(135deg, #1A1612 0%, #2C2420 100%); }
+  .hero-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px); background-size:60px 60px; }
+  .hero-content { position:relative; max-width:1400px; margin:auto; padding:80px 40px; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+  .hero-text { }
+  .hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,.15); border:1px solid rgba(201,168,76,.3); padding:6px 16px; border-radius:2px; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:28px; }
+  .hero h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(3rem,5vw,4.8rem); line-height:1.1; font-weight:300; margin-bottom:24px; }
+  .hero h1 em { font-style:italic; color:var(--gold); }
+  .hero p { color:rgba(245,240,232,.6); font-size:.95rem; line-height:1.8; max-width:400px; margin-bottom:40px; font-weight:300; }
+  .btn-primary { display:inline-flex; align-items:center; gap:10px; background:var(--gold); color:var(--dark); padding:16px 36px; font-size:.82rem; letter-spacing:.12em; text-transform:uppercase; font-weight:600; border:none; cursor:pointer; text-decoration:none; transition:.3s; font-family:'DM Sans',sans-serif; }
+  .btn-primary:hover { background:var(--cream); }
+  .btn-outline { display:inline-flex; align-items:center; gap:10px; background:transparent; color:var(--cream); padding:16px 36px; font-size:.82rem; letter-spacing:.12em; text-transform:uppercase; font-weight:500; border:1px solid rgba(245,240,232,.3); cursor:pointer; text-decoration:none; transition:.3s; font-family:'DM Sans',sans-serif; margin-left:16px; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .hero-visual { display:flex; align-items:center; justify-content:center; }
+  .hero-card { background:rgba(245,240,232,.06); border:1px solid rgba(201,168,76,.2); border-radius:4px; padding:40px; max-width:340px; width:100%; backdrop-filter:blur(10px); position:relative; animation:floatCard 4s ease-in-out infinite; }
+  @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .hero-card-img { width:100%; aspect-ratio:1; background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.05)); border-radius:2px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:5rem; }
+  .hero-card-name { font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--cream); margin-bottom:6px; }
+  .hero-card-price { color:var(--gold); font-size:1.1rem; font-weight:500; }
+  .hero-stats { display:flex; gap:40px; margin-top:48px; }
+  .stat { }
+  .stat-num { font-family:'Cormorant Garamond',serif; font-size:2rem; color:var(--gold); font-weight:600; }
+  .stat-label { font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(245,240,232,.5); margin-top:2px; }
+
+  /* ── SECTION BASE ── */
+  .section { padding:80px 40px; max-width:1400px; margin:auto; }
+  .section-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:48px; }
+  .section-title { font-family:'Cormorant Garamond',serif; font-size:2.4rem; font-weight:300; line-height:1.2; }
+  .section-title em { font-style:italic; color:var(--gold); }
+  .section-sub { font-size:.8rem; letter-spacing:.12em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:10px; display:block; }
+  .view-all { text-decoration:none; color:var(--gold); font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; font-weight:500; display:flex; align-items:center; gap:6px; transition:.2s; border-bottom:1px solid transparent; padding-bottom:1px; }
+  .view-all:hover { border-color:var(--gold); }
+
+  /* ── CATEGORIES ── */
+  .categories-bg { background:var(--dark); padding:60px 0; }
+  .categories-inner { max-width:1400px; margin:auto; padding:0 40px; }
+  .categories-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-top:40px; }
+  .cat-card { background:rgba(245,240,232,.05); border:1px solid rgba(201,168,76,.15); border-radius:3px; padding:28px 20px; text-align:center; cursor:pointer; transition:.3s; text-decoration:none; color:var(--cream); position:relative; overflow:hidden; }
+  .cat-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(201,168,76,.1),transparent); opacity:0; transition:.3s; }
+  .cat-card:hover::before { opacity:1; }
+  .cat-card:hover { border-color:var(--gold); transform:translateY(-4px); }
+  .cat-icon { font-size:2.2rem; margin-bottom:12px; display:block; }
+  .cat-name { font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; font-weight:500; margin-bottom:4px; }
+  .cat-count { font-size:.72rem; color:rgba(245,240,232,.4); }
+
+  /* ── PRODUCT GRID ── */
+  .products-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
+  .product-card { background:var(--surface); border:1px solid var(--border); border-radius:3px; overflow:hidden; cursor:pointer; transition:.3s; position:relative; }
+  .product-card:hover { box-shadow:0 12px 40px rgba(26,22,18,.12); transform:translateY(-4px); }
+  .product-img { width:100%; aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:4rem; background:linear-gradient(135deg,#F0EBE1,#E8E0D0); position:relative; overflow:hidden; transition:.3s; }
+  .product-card:hover .product-img { background:linear-gradient(135deg,#E8E0D0,#DDD4BE); }
+  .product-tags { position:absolute; top:12px; left:12px; display:flex; flex-direction:column; gap:6px; }
+  .tag { font-size:.65rem; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; border-radius:1px; font-weight:600; }
+  .tag-new { background:var(--dark); color:var(--gold); }
+  .tag-sale { background:var(--badge-red); color:#fff; }
+  .tag-hot { background:var(--gold); color:var(--dark); }
+  .wishlist-btn { position:absolute; top:12px; right:12px; background:white; border:none; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1rem; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:.2s; opacity:0; }
+  .product-card:hover .wishlist-btn { opacity:1; }
+  .wishlist-btn:hover { background:var(--gold); }
+  .product-info { padding:18px; }
+  .product-cat { font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:6px; }
+  .product-name { font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:400; line-height:1.3; margin-bottom:10px; }
+  .product-rating { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+  .stars { color:var(--gold); font-size:.78rem; letter-spacing:.05em; }
+  .rating-count { font-size:.72rem; color:var(--warm-gray); }
+  .product-footer { display:flex; align-items:center; justify-content:space-between; }
+  .price { font-size:1.1rem; font-weight:600; color:var(--dark); }
+  .price-old { font-size:.85rem; color:var(--warm-gray); text-decoration:line-through; margin-right:6px; }
+  .add-cart-btn { background:var(--dark); color:var(--cream); border:none; padding:8px 16px; font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:.3s; font-family:'DM Sans',sans-serif; border-radius:2px; }
+  .add-cart-btn:hover { background:var(--gold); color:var(--dark); }
+
+  /* ── PROMO BANNER ── */
+  .promo-section { padding:40px; }
+  .promo-grid { max-width:1400px; margin:auto; display:grid; grid-template-columns:2fr 1fr; gap:20px; }
+  .promo-card { border-radius:4px; padding:48px; position:relative; overflow:hidden; min-height:240px; display:flex; flex-direction:column; justify-content:flex-end; }
+  .promo-card-main { background:linear-gradient(135deg,#1A1612,#3D2B1F); }
+  .promo-card-side { background:linear-gradient(135deg,#C9A84C,#8B6914); }
+  .promo-card::before { content:''; position:absolute; inset:0; background:inherit; opacity:.85; }
+  .promo-card-content { position:relative; z-index:1; }
+  .promo-badge { display:inline-block; background:var(--gold); color:var(--dark); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; padding:5px 12px; font-weight:600; margin-bottom:14px; }
+  .promo-card-side .promo-badge { background:var(--dark); color:var(--gold); }
+  .promo-title { font-family:'Cormorant Garamond',serif; font-size:2rem; color:var(--cream); font-weight:300; line-height:1.2; margin-bottom:8px; }
+  .promo-card-side .promo-title { font-size:1.5rem; }
+  .promo-desc { color:rgba(245,240,232,.6); font-size:.82rem; margin-bottom:20px; }
+  .promo-deco { position:absolute; right:40px; top:50%; transform:translateY(-50%); font-size:6rem; opacity:.15; }
+
+  /* ── FEATURES ── */
+  .features-strip { background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:32px 40px; }
+  .features-inner { max-width:1400px; margin:auto; display:grid; grid-template-columns:repeat(4,1fr); gap:32px; }
+  .feature-item { display:flex; align-items:flex-start; gap:16px; }
+  .feature-icon { font-size:1.6rem; flex-shrink:0; }
+  .feature-title { font-size:.82rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; margin-bottom:4px; }
+  .feature-desc { font-size:.78rem; color:var(--warm-gray); line-height:1.5; }
+
+  /* ── CART DRAWER ── */
+  .overlay { position:fixed; inset:0; background:rgba(26,22,18,.5); z-index:950; opacity:0; pointer-events:none; transition:.3s; backdrop-filter:blur(4px); }
+  .overlay.open { opacity:1; pointer-events:all; }
+  .cart-drawer { position:fixed; top:0; right:0; bottom:0; width:420px; background:var(--surface); z-index:960; transform:translateX(100%); transition:.4s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; box-shadow:-8px 0 32px rgba(0,0,0,.15); }
+  .cart-drawer.open { transform:translateX(0); }
+  .drawer-header { padding:28px 28px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .drawer-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; }
+  .close-btn { background:none; border:1px solid var(--border); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1.1rem; transition:.2s; display:flex; align-items:center; justify-content:center; }
+  .close-btn:hover { background:var(--dark); color:var(--cream); border-color:var(--dark); }
+  .cart-items { flex:1; overflow-y:auto; padding:20px 28px; display:flex; flex-direction:column; gap:16px; }
+  .cart-empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--warm-gray); gap:12px; text-align:center; }
+  .cart-empty span { font-size:3rem; }
+  .cart-item { display:flex; gap:14px; background:white; border:1px solid var(--border); border-radius:3px; padding:14px; position:relative; }
+  .cart-item-img { width:70px; height:70px; background:linear-gradient(135deg,#F0EBE1,#E8E0D0); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; flex-shrink:0; }
+  .cart-item-info { flex:1; }
+  .cart-item-name { font-family:'Cormorant Garamond',serif; font-size:1rem; margin-bottom:4px; }
+  .cart-item-price { font-size:.85rem; color:var(--gold); font-weight:600; margin-bottom:10px; }
+  .qty-ctrl { display:flex; align-items:center; gap:0; border:1px solid var(--border); width:fit-content; border-radius:2px; overflow:hidden; }
+  .qty-btn { background:none; border:none; width:28px; height:28px; cursor:pointer; font-size:.9rem; transition:.2s; display:flex; align-items:center; justify-content:center; }
+  .qty-btn:hover { background:var(--gold); color:white; }
+  .qty-val { width:32px; text-align:center; font-size:.82rem; font-weight:600; border:none; border-left:1px solid var(--border); border-right:1px solid var(--border); line-height:28px; }
+  .remove-item { position:absolute; top:10px; right:10px; background:none; border:none; cursor:pointer; color:var(--warm-gray); font-size:.85rem; transition:.2s; }
+  .remove-item:hover { color:var(--badge-red); }
+  .cart-footer { padding:20px 28px 28px; border-top:1px solid var(--border); }
+  .cart-summary { margin-bottom:20px; }
+  .summary-row { display:flex; justify-content:space-between; font-size:.85rem; padding:6px 0; }
+  .summary-row.total { font-size:1rem; font-weight:600; border-top:1px solid var(--border); padding-top:14px; margin-top:8px; }
+  .checkout-btn { width:100%; background:var(--dark); color:var(--cream); border:none; padding:16px; font-size:.82rem; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; transition:.3s; font-family:'DM Sans',sans-serif; font-weight:500; border-radius:2px; margin-bottom:10px; }
+  .checkout-btn:hover { background:var(--gold); color:var(--dark); }
+  .continue-btn { width:100%; background:transparent; color:var(--dark); border:1px solid var(--border); padding:13px; font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:.3s; font-family:'DM Sans',sans-serif; border-radius:2px; }
+  .continue-btn:hover { border-color:var(--dark); }
+
+  /* ── CHECKOUT MODAL ── */
+  .modal { position:fixed; inset:0; z-index:980; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:.3s; }
+  .modal.open { opacity:1; pointer-events:all; }
+  .modal-overlay { position:absolute; inset:0; background:rgba(26,22,18,.6); backdrop-filter:blur(6px); }
+  .modal-box { position:relative; background:var(--surface); width:100%; max-width:680px; max-height:90vh; overflow-y:auto; border-radius:4px; box-shadow:0 24px 80px rgba(0,0,0,.25); transform:translateY(20px); transition:.4s; }
+  .modal.open .modal-box { transform:translateY(0); }
+  .modal-header { padding:28px 32px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-title { font-family:'Cormorant Garamond',serif; font-size:1.6rem; }
+  .modal-body { padding:32px; }
+  .steps { display:flex; gap:0; margin-bottom:32px; }
+  .step { flex:1; text-align:center; position:relative; }
+  .step::after { content:''; position:absolute; top:15px; left:50%; width:100%; height:1px; background:var(--border); z-index:0; }
+  .step:last-child::after { display:none; }
+  .step-circle { width:30px; height:30px; border-radius:50%; border:2px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:600; margin:0 auto 8px; position:relative; z-index:1; transition:.3s; }
+  .step.active .step-circle { background:var(--gold); border-color:var(--gold); color:white; }
+  .step.done .step-circle { background:var(--dark); border-color:var(--dark); color:var(--cream); }
+  .step-label { font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--warm-gray); }
+  .step.active .step-label { color:var(--dark); font-weight:600; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-group.full { grid-column:1/-1; }
+  .form-label { font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--warm-gray); font-weight:500; }
+  .form-input { border:1px solid var(--border); padding:12px 14px; font-family:'DM Sans',sans-serif; font-size:.9rem; color:var(--dark); background:white; border-radius:2px; outline:none; transition:.2s; }
+  .form-input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,.1); }
+  .form-row { display:flex; gap:16px; margin-top:24px; justify-content:flex-end; }
+  .btn-gold { background:var(--gold); color:var(--dark); border:none; padding:13px 28px; font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:600; border-radius:2px; transition:.2s; }
+  .btn-gold:hover { background:var(--dark); color:var(--cream); }
+  .btn-ghost { background:transparent; color:var(--warm-gray); border:1px solid var(--border); padding:13px 28px; font-size:.8rem; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; font-family:'DM Sans',sans-serif; border-radius:2px; transition:.2s; }
+  .btn-ghost:hover { border-color:var(--dark); color:var(--dark); }
+  .order-success { text-align:center; padding:40px 20px; }
+  .success-icon { font-size:4rem; margin-bottom:16px; }
+  .success-title { font-family:'Cormorant Garamond',serif; font-size:2rem; margin-bottom:10px; }
+  .success-desc { color:var(--warm-gray); font-size:.9rem; line-height:1.7; margin-bottom:28px; }
+  .order-num { display:inline-block; background:var(--dark); color:var(--gold); padding:8px 20px; border-radius:2px; font-size:.8rem; letter-spacing:.15em; font-weight:600; }
+
+  /* ── WISHLIST ── */
+  .wishlist-drawer { position:fixed; top:0; left:0; bottom:0; width:400px; background:var(--surface); z-index:960; transform:translateX(-100%); transition:.4s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; box-shadow:8px 0 32px rgba(0,0,0,.15); }
+  .wishlist-drawer.open { transform:translateX(0); }
+
+  /* ── FILTERS ── */
+  .filter-bar { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 40px; }
+  .filter-inner { max-width:1400px; margin:auto; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .filter-label { font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; color:var(--warm-gray); font-weight:500; }
+  .filter-chip { border:1px solid var(--border); background:white; padding:7px 16px; border-radius:20px; font-size:.78rem; cursor:pointer; transition:.2s; font-family:'DM Sans',sans-serif; }
+  .filter-chip:hover, .filter-chip.active { background:var(--dark); color:var(--cream); border-color:var(--dark); }
+  .sort-select { margin-left:auto; border:1px solid var(--border); padding:8px 14px; font-family:'DM Sans',sans-serif; font-size:.8rem; background:white; cursor:pointer; border-radius:2px; outline:none; }
+
+  /* ── NEWSLETTER ── */
+  .newsletter { background:var(--dark); padding:80px 40px; text-align:center; }
+  .newsletter-inner { max-width:560px; margin:auto; }
+  .newsletter h2 { font-family:'Cormorant Garamond',serif; font-size:2.4rem; color:var(--cream); font-weight:300; margin-bottom:12px; }
+  .newsletter h2 em { color:var(--gold); font-style:italic; }
+  .newsletter p { color:rgba(245,240,232,.55); font-size:.88rem; margin-bottom:32px; line-height:1.7; }
+  .newsletter-form { display:flex; gap:0; max-width:440px; margin:auto; border:1px solid rgba(201,168,76,.3); border-radius:2px; overflow:hidden; }
+  .newsletter-form input { flex:1; background:rgba(255,255,255,.06); border:none; padding:14px 18px; font-family:'DM Sans',sans-serif; color:var(--cream); font-size:.88rem; outline:none; }
+  .newsletter-form input::placeholder { color:rgba(245,240,232,.35); }
+  .newsletter-form button { background:var(--gold); border:none; padding:14px 24px; cursor:pointer; color:var(--dark); font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; font-weight:600; font-family:'DM Sans',sans-serif; transition:.2s; white-space:nowrap; }
+  .newsletter-form button:hover { background:var(--cream); }
+
+  /* ── FOOTER ── */
+  footer { background:#0F0D0A; color:rgba(245,240,232,.55); padding:64px 40px 32px; }
+  .footer-grid { max-width:1400px; margin:auto; display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px; margin-bottom:48px; }
+  .footer-brand .logo { color:var(--cream); font-size:1.6rem; display:inline-block; margin-bottom:16px; }
+  .footer-desc { font-size:.82rem; line-height:1.7; color:rgba(245,240,232,.45); max-width:260px; margin-bottom:24px; }
+  .social-links { display:flex; gap:12px; }
+  .social-link { width:36px; height:36px; border:1px solid rgba(245,240,232,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.9rem; text-decoration:none; color:rgba(245,240,232,.5); transition:.2s; }
+  .social-link:hover { border-color:var(--gold); color:var(--gold); }
+  .footer-col h4 { font-size:.78rem; letter-spacing:.12em; text-transform:uppercase; color:var(--cream); font-weight:500; margin-bottom:20px; }
+  .footer-links { display:flex; flex-direction:column; gap:10px; }
+  .footer-links a { text-decoration:none; color:rgba(245,240,232,.45); font-size:.82rem; transition:.2s; }
+  .footer-links a:hover { color:var(--gold); }
+  .footer-bottom { max-width:1400px; margin:auto; border-top:1px solid rgba(245,240,232,.08); padding-top:28px; display:flex; align-items:center; justify-content:space-between; }
+  .footer-bottom-text { font-size:.75rem; color:rgba(245,240,232,.3); }
+  .payment-icons { display:flex; gap:8px; }
+  .payment-icon { background:rgba(245,240,232,.08); border-radius:3px; padding:5px 10px; font-size:.7rem; color:rgba(245,240,232,.4); letter-spacing:.05em; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:1024px){
+    .products-grid { grid-template-columns:repeat(3,1fr); }
+    .categories-grid { grid-template-columns:repeat(3,1fr); }
+    .footer-grid { grid-template-columns:1fr 1fr; }
+  }
+  @media(max-width:768px){
+    .hero-content { grid-template-columns:1fr; }
+    .hero-visual { display:none; }
+    .products-grid { grid-template-columns:repeat(2,1fr); }
+    .categories-grid { grid-template-columns:repeat(2,1fr); }
+    .promo-grid { grid-template-columns:1fr; }
+    .features-inner { grid-template-columns:1fr 1fr; }
+    .footer-grid { grid-template-columns:1fr; gap:32px; }
+    nav { display:none; }
+    .hamburger { display:flex; }
+    .search-bar { display:none; }
+    .cart-drawer, .wishlist-drawer { width:100%; }
+    .form-grid { grid-template-columns:1fr; }
+    .header-inner { padding:0 20px; }
+    .section { padding:60px 20px; }
+  }
+  @media(max-width:480px){
+    .products-grid { grid-template-columns:1fr; }
+    .categories-grid { grid-template-columns:1fr 1fr; }
+    .features-inner { grid-template-columns:1fr; }
+  }
+
+  /* ── PRODUCT DETAIL PANEL ── */
+  .detail-panel { position:fixed; inset:0; z-index:970; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:.3s; }
+  .detail-panel.open { opacity:1; pointer-events:all; }
+  .detail-panel-box { position:relative; background:var(--surface); width:100%; max-width:800px; max-height:90vh; overflow-y:auto; border-radius:4px; box-shadow:0 24px 80px rgba(0,0,0,.25); display:grid; grid-template-columns:1fr 1fr; transform:scale(.97); transition:.4s; }
+  .detail-panel.open .detail-panel-box { transform:scale(1); }
+  .detail-img { background:linear-gradient(135deg,#F0EBE1,#E8E0D0); display:flex; align-items:center; justify-content:center; font-size:7rem; min-height:360px; }
+  .detail-content { padding:36px; }
+  .detail-cat { font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:8px; }
+  .detail-name { font-family:'Cormorant Garamond',serif; font-size:1.9rem; font-weight:300; margin-bottom:12px; line-height:1.2; }
+  .detail-rating { display:flex; align-items:center; gap:8px; margin-bottom:16px; font-size:.82rem; color:var(--warm-gray); }
+  .detail-price { font-size:1.8rem; font-weight:600; color:var(--dark); margin-bottom:20px; }
+  .detail-desc { font-size:.85rem; line-height:1.8; color:var(--warm-gray); margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:24px; }
+  .detail-options { margin-bottom:24px; }
+  .option-label { font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; color:var(--warm-gray); margin-bottom:10px; font-weight:500; }
+  .option-btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .opt-btn { border:1px solid var(--border); padding:7px 16px; border-radius:2px; font-size:.8rem; cursor:pointer; background:white; transition:.2s; font-family:'DM Sans',sans-serif; }
+  .opt-btn:hover, .opt-btn.active { background:var(--dark); color:var(--cream); border-color:var(--dark); }
+  .detail-actions { display:flex; gap:10px; }
+  .detail-add-btn { flex:1; background:var(--dark); color:var(--cream); border:none; padding:14px; font-size:.82rem; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; transition:.3s; font-family:'DM Sans',sans-serif; border-radius:2px; }
+  .detail-add-btn:hover { background:var(--gold); color:var(--dark); }
+  .detail-wish-btn { background:white; border:1px solid var(--border); width:48px; height:48px; border-radius:2px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; transition:.2s; }
+  .detail-wish-btn:hover { border-color:var(--gold); }
+  @media(max-width:640px){
+    .detail-panel-box { grid-template-columns:1fr; }
+    .detail-img { min-height:220px; font-size:5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- Top Bar -->
+<div class="topbar">✦ GRATIS ONGKIR untuk pembelian di atas <span>Rp 500.000</span> ✦ Garansi 30 Hari Uang Kembali ✦</div>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">LU<span>X</span>E</a>
+    <nav id="mainNav">
+      <a href="#" class="active">Beranda</a>
+      <a href="#products">Produk</a>
+      <a href="#categories">Kategori</a>
+      <a href="#promo">Promo</a>
+      <a href="#newsletter">Kontak</a>
+    </nav>
+    <div class="header-actions">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Cari produk..." oninput="filterProducts()">
+        <button>🔍</button>
+      </div>
+      <button class="icon-btn" onclick="toggleWishlist()" title="Wishlist">
+        ♡
+        <span class="badge" id="wishlistBadge" style="display:none">0</span>
+      </button>
+      <button class="icon-btn" onclick="toggleCart()" title="Keranjang">
+        🛍
+        <span class="badge" id="cartBadge">0</span>
+      </button>
+      <div class="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <div class="hero-badge">✦ Koleksi Terbaru 2025</div>
+      <h1>Temukan <em>Keindahan</em><br>dalam Setiap Detail</h1>
+      <p>Kurasi produk premium yang dipilih dengan saksama — dari fashion terkini hingga aksesori mewah, semuanya hadir untuk melengkapi gaya hidup Anda.</p>
+      <a href="#products" class="btn-primary">Jelajahi Koleksi →</a>
+      <a href="#categories" class="btn-outline">Lihat Kategori</a>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num">12K+</div><div class="stat-label">Produk</div></div>
+        <div class="stat"><div class="stat-num">98%</div><div class="stat-label">Kepuasan</div></div>
+        <div class="stat"><div class="stat-num">50K+</div><div class="stat-label">Pelanggan</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="hero-card-img">👜</div>
+        <div class="hero-card-name">Leather Tote Premium</div>
+        <div class="hero-card-price">Rp 2.450.000</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Strip -->
+<div class="features-strip">
+  <div class="features-inner">
+    <div class="feature-item"><div class="feature-icon">🚚</div><div><div class="feature-title">Gratis Ongkir</div><div class="feature-desc">Untuk pembelian di atas Rp 500K ke seluruh Indonesia</div></div></div>
+    <div class="feature-item"><div class="feature-icon">🔒</div><div><div class="feature-title">Pembayaran Aman</div><div class="feature-desc">SSL terenkripsi & semua metode pembayaran diterima</div></div></div>
+    <div class="feature-item"><div class="feature-icon">↩️</div><div><div class="feature-title">Garansi 30 Hari</div><div class="feature-desc">Kembalikan produk jika tidak sesuai ekspektasi Anda</div></div></div>
+    <div class="feature-item"><div class="feature-icon">🎁</div><div><div class="feature-title">Gift Wrapping</div><div class="feature-desc">Tersedia layanan pembungkus hadiah premium</div></div></div>
+  </div>
+</div>
+
+<!-- Categories -->
+<div class="categories-bg" id="categories">
+  <div class="categories-inner">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div>
+        <span class="section-sub" style="color:rgba(245,240,232,.4)">Temukan</span>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--cream)">Semua <em style="color:var(--gold);font-style:italic">Kategori</em></h2>
+      </div>
+    </div>
+    <div class="categories-grid">
+      <a href="#products" class="cat-card" onclick="filterByCategory('Fashion')"><span class="cat-icon">👗</span><div class="cat-name">Fashion</div><div class="cat-count">248 produk</div></a>
+      <a href="#products" class="cat-card" onclick="filterByCategory('Aksesori')"><span class="cat-icon">💎</span><div class="cat-name">Aksesori</div><div class="cat-count">156 produk</div></a>
+      <a href="#products" class="cat-card" onclick="filterByCategory('Elektronik')"><span class="cat-icon">📱</span><div class="cat-name">Elektronik</div><div class="cat-count">94 produk</div></a>
+      <a href="#products" class="cat-card" onclick="filterByCategory('Rumah')"><span class="cat-icon">🏡</span><div class="cat-name">Rumah & Dapur</div><div class="cat-count">312 produk</div></a>
+      <a href="#products" class="cat-card" onclick="filterByCategory('Kecantikan')"><span class="cat-icon">✨</span><div class="cat-name">Kecantikan</div><div class="cat-count">187 produk</div></a>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar" id="products">
+  <div class="filter-inner">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-chip active" onclick="setFilter(this,'semua')">Semua</button>
+    <button class="filter-chip" onclick="setFilter(this,'baru')">Terbaru</button>
+    <button class="filter-chip" onclick="setFilter(this,'sale')">Sale</button>
+    <button class="filter-chip" onclick="setFilter(this,'terlaris')">Terlaris</button>
+    <button class="filter-chip" onclick="setFilter(this,'Fashion')">Fashion</button>
+    <button class="filter-chip" onclick="setFilter(this,'Aksesori')">Aksesori</button>
+    <button class="filter-chip" onclick="setFilter(this,'Elektronik')">Elektronik</button>
+    <button class="filter-chip" onclick="setFilter(this,'Rumah')">Rumah</button>
+    <button class="filter-chip" onclick="setFilter(this,'Kecantikan')">Kecantikan</button>
+    <select class="sort-select" id="sortSelect" onchange="sortProducts()">
+      <option value="default">Urutkan: Relevansi</option>
+      <option value="price-asc">Harga: Terendah</option>
+      <option value="price-desc">Harga: Tertinggi</option>
+      <option value="rating">Rating Terbaik</option>
+      <option value="newest">Terbaru</option>
+    </select>
+  </div>
+</div>
+
+<!-- Products -->
+<section class="section">
+  <div class="section-header">
+    <div>
+      <span class="section-sub">Koleksi Pilihan</span>
+      <h2 class="section-title">Produk <em>Unggulan</em></h2>
+    </div>
+    <a href="#" class="view-all">Lihat Semua →</a>
+  </div>
+  <div class="products-grid" id="productsGrid"></div>
+</section>
+
+<!-- Promo Banner -->
+<div class="promo-section" id="promo">
+  <div class="promo-grid">
+    <div class="promo-card promo-card-main">
+      <div class="promo-deco">🛍</div>
+      <div class="promo-card-content">
+        <div class="promo-badge">Flash Sale — Hingga 60%</div>
+        <div class="promo-title">Koleksi Akhir Tahun<br>Diskon Besar</div>
+        <div class="promo-desc">Dapatkan penawaran eksklusif untuk koleksi premium pilihan</div>
+        <button class="btn-primary" onclick="setFilter(document.querySelector('.filter-chip'),'sale')">Lihat Penawaran →</button>
+      </div>
+    </div>
+    <div class="promo-card promo-card-side">
+      <div class="promo-deco">✦</div>
+      <div class="promo-card-content">
+        <div class="promo-badge">Member Eksklusif</div>
+        <div class="promo-title">Daftar & Hemat<br>Rp 150.000</div>
+        <div class="promo-desc">Untuk pembelian pertama Anda</div>
+        <button class="btn-primary" onclick="showToast('✉ Link pendaftaran dikirim!')">Daftar Sekarang</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Newsletter -->
+<div class="newsletter" id="newsletter">
+  <div class="newsletter-inner">
+    <h2>Dapatkan <em>Penawaran</em> Terbaik</h2>
+    <p>Daftarkan email Anda dan jadilah yang pertama mengetahui koleksi baru, flash sale eksklusif, dan tips gaya hidup premium.</p>
+    <div class="newsletter-form">
+      <input type="email" id="emailInput" placeholder="Masukkan email Anda...">
+      <button onclick="subscribeEmail()">Daftar ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="logo">LU<span style="color:var(--gold)">X</span>E</a>
+      <div class="footer-desc">Platform belanja premium yang menghadirkan produk berkualitas tinggi dari brand terpercaya di seluruh dunia.</div>
+      <div class="social-links">
+        <a href="#" class="social-link">📘</a>
+        <a href="#" class="social-link">📸</a>
+        <a href="#" class="social-link">🐦</a>
+        <a href="#" class="social-link">▶</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Produk</h4>
+      <div class="footer-links">
+        <a href="#">Fashion Wanita</a>
+        <a href="#">Fashion Pria</a>
+        <a href="#">Aksesori</a>
+        <a href="#">Elektronik</a>
+        <a href="#">Rumah & Dapur</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Bantuan</h4>
+      <div class="footer-links">
+        <a href="#">Cara Berbelanja</a>
+        <a href="#">Lacak Pesanan</a>
+        <a href="#">Pengembalian</a>
+        <a href="#">FAQ</a>
+        <a href="#">Hubungi Kami</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Perusahaan</h4>
+      <div class="footer-links">
+        <a href="#">Tentang Kami</a>
+        <a href="#">Karir</a>
+        <a href="#">Blog</a>
+        <a href="#">Press</a>
+        <a href="#">Kebijakan Privasi</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-text">© 2025 LUXE Store. Hak cipta dilindungi.</div>
+    <div class="payment-icons">
+      <div class="payment-icon">VISA</div>
+      <div class="payment-icon">MASTERCARD</div>
+      <div class="payment-icon">OVO</div>
+      <div class="payment-icon">GOPAY</div>
+      <div class="payment-icon">BCA</div>
+      <div class="payment-icon">COD</div>
+    </div>
+  </div>
+</footer>
+
+<!-- Cart Drawer -->
+<div class="cart-drawer" id="cartDrawer">
+  <div class="drawer-header">
+    <div class="drawer-title">Keranjang Belanja</div>
+    <button class="close-btn" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-summary">
+      <div class="summary-row"><span>Subtotal</span><span id="cartSubtotal">Rp 0</span></div>
+      <div class="summary-row"><span>Ongkir</span><span id="cartShipping">Gratis</span></div>
+      <div class="summary-row"><span>Diskon</span><span id="cartDiscount" style="color:var(--badge-red)">- Rp 0</span></div>
+      <div class="summary-row total"><span>Total</span><span id="cartTotal">Rp 0</span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input type="text" id="couponInput" class="form-input" placeholder="Kode kupon..." style="flex:1;font-size:.8rem">
+      <button class="btn-gold" onclick="applyCoupon()" style="white-space:nowrap">Pakai</button>
+    </div>
+    <button class="checkout-btn" onclick="openCheckout()">Lanjut ke Checkout →</button>
+    <button class="continue-btn" onclick="toggleCart()">Lanjut Belanja</button>
+  </div>
+</div>
+
+<!-- Wishlist Drawer -->
+<div class="wishlist-drawer" id="wishlistDrawer">
+  <div class="drawer-header">
+    <div class="drawer-title">Wishlist Saya</div>
+    <button class="close-btn" onclick="toggleWishlist()">✕</button>
+  </div>
+  <div class="cart-items" id="wishlistItems"></div>
+</div>
+
+<!-- Product Detail Panel -->
+<div class="detail-panel" id="detailPanel">
+  <div class="modal-overlay" onclick="closeDetail()"></div>
+  <div class="detail-panel-box" id="detailBox"></div>
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal" id="checkoutModal">
+  <div class="modal-overlay" onclick="closeCheckout()"></div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Checkout</div>
+      <button class="close-btn" onclick="closeCheckout()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="steps">
+        <div class="step active" id="step1"><div class="step-circle">1</div><div class="step-label">Pengiriman</div></div>
+        <div class="step" id="step2"><div class="step-circle">2</div><div class="step-label">Pembayaran</div></div>
+        <div class="step" id="step3"><div class="step-circle">3</div><div class="step-label">Konfirmasi</div></div>
+      </div>
+      <div id="checkoutContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const products = [
+  {id:1,name:'Blouse Silk Premium',cat:'Fashion',price:485000,oldPrice:680000,emoji:'👗',tag:'sale',rating:4.8,reviews:124,desc:'Blouse silk premium dengan tekstur halus dan jahitan rapi. Tersedia dalam berbagai ukuran.',sizes:['XS','S','M','L','XL'],colors:['Krem','Hitam','Navy']},
+  {id:2,name:'Leather Tote Bag',cat:'Aksesori',price:2450000,oldPrice:null,emoji:'👜',tag:'new',rating:4.9,reviews:87,desc:'Tas tote kulit asli full grain dengan hardware emas. Ideal untuk kerja dan jalan-jalan.',sizes:null,colors:['Coklat','Hitam','Tan']},
+  {id:3,name:'Smart Watch Series X',cat:'Elektronik',price:3200000,oldPrice:3800000,emoji:'⌚',tag:'sale',rating:4.7,reviews:203,desc:'Smartwatch dengan monitor kesehatan lengkap, GPS, dan daya tahan baterai 7 hari.',sizes:['40mm','44mm'],colors:['Silver','Space Gray','Gold']},
+  {id:4,name:'Parfum Oud Royale',cat:'Kecantikan',price:895000,oldPrice:null,emoji:'🌸',tag:'hot',rating:5.0,reviews:56,desc:'Eau de Parfum dengan notes oud, mawar, dan musk. Tahan hingga 12 jam.',sizes:['30ml','50ml','100ml'],colors:null},
+  {id:5,name:'Kemeja Linen Premium',cat:'Fashion',price:375000,oldPrice:null,emoji:'👔',tag:'new',rating:4.6,reviews:98,desc:'Kemeja linen berkualitas tinggi, ringan dan nyaman untuk segala suasana.',sizes:['S','M','L','XL','XXL'],colors:['Putih','Biru Muda','Sage']},
+  {id:6,name:'Cincin Gold-Plated',cat:'Aksesori',price:285000,oldPrice:350000,emoji:'💍',tag:'sale',rating:4.8,reviews:167,desc:'Cincin berlapis emas 18k dengan detail ukiran halus. Anti karat & anti alergi.',sizes:['5','6','7','8'],colors:['Gold','Rose Gold']},
+  {id:7,name:'Aroma Diffuser Marble',cat:'Rumah',price:520000,oldPrice:null,emoji:'🕯',tag:'new',rating:4.7,reviews:45,desc:'Diffuser aromaterapi dengan desain marmer elegan. Dilengkapi 5 essential oil.',sizes:null,colors:['Putih','Abu']},
+  {id:8,name:'Sunglasses Retro',cat:'Aksesori',price:650000,oldPrice:850000,emoji:'🕶',tag:'sale',rating:4.5,reviews:112,desc:'Kacamata retro dengan lensa polarized UV400 dan frame acetate premium.',sizes:null,colors:['Tortoise','Hitam','Transparan']},
+  {id:9,name:'Serum Vitamin C 20%',cat:'Kecantikan',price:345000,oldPrice:null,emoji:'✨',tag:'hot',rating:4.9,reviews:289,desc:'Serum Vitamin C konsentrasi tinggi untuk mencerahkan & meratakan warna kulit.',sizes:['15ml','30ml'],colors:null},
+  {id:10,name:'Sandal Kulit Handmade',cat:'Fashion',price:780000,oldPrice:null,emoji:'👡',tag:'new',rating:4.7,reviews:63,desc:'Sandal kulit asli buatan tangan pengrajin lokal. Nyaman dan tahan lama.',sizes:['36','37','38','39','40'],colors:['Tan','Putih','Hitam']},
+  {id:11,name:'Earphone Wireless Pro',cat:'Elektronik',price:1850000,oldPrice:2200000,emoji:'🎧',tag:'sale',rating:4.8,reviews:178,desc:'TWS earphone dengan ANC, audio Hi-Fi, dan baterai hingga 30 jam.',sizes:null,colors:['Putih','Hitam']},
+  {id:12,name:'Lilin Aromaterapi Set',cat:'Rumah',price:295000,oldPrice:null,emoji:'🕯',tag:'hot',rating:4.6,reviews:94,desc:'Set 3 lilin aromaterapi dari bahan soy wax alami dengan aroma lavender, vanilla & sandalwood.',sizes:null,colors:null},
+];
+
+let cart = JSON.parse(localStorage.getItem('luxe_cart')||'[]');
+let wishlist = JSON.parse(localStorage.getItem('luxe_wishlist')||'[]');
+let currentFilter = 'semua';
+let currentSort = 'default';
+let activeDetail = null;
+let checkoutStep = 1;
+let discount = 0;
+
+// ── FORMAT CURRENCY ──
+const fmt = n => 'Rp ' + n.toLocaleString('id-ID');
+
+// ── RENDER STARS ──
+const stars = r => '★'.repeat(Math.floor(r)) + (r%1>=0.5?'½':'') + '☆'.repeat(5-Math.ceil(r));
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── RENDER PRODUCTS ──
+function renderProducts() {
+  let list = [...products];
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  if(search) list = list.filter(p=>p.name.toLowerCase().includes(search)||p.cat.toLowerCase().includes(search));
+  if(currentFilter==='baru') list = list.filter(p=>p.tag==='new');
+  else if(currentFilter==='sale') list = list.filter(p=>p.tag==='sale');
+  else if(currentFilter==='terlaris') list = list.filter(p=>p.rating>=4.8);
+  else if(currentFilter!=='semua') list = list.filter(p=>p.cat===currentFilter||p.cat.toLowerCase()===currentFilter.toLowerCase());
+  if(currentSort==='price-asc') list.sort((a,b)=>a.price-b.price);
+  else if(currentSort==='price-desc') list.sort((a,b)=>b.price-a.price);
+  else if(currentSort==='rating') list.sort((a,b)=>b.rating-a.rating);
+  else if(currentSort==='newest') list.sort((a,b)=>b.id-a.id);
+  const grid = document.getElementById('productsGrid');
+  if(!list.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--warm-gray)"><div style="font-size:3rem">🔍</div><div style="margin-top:12px">Produk tidak ditemukan</div></div>';return;}
+  grid.innerHTML = list.map(p=>{
+    const inWish = wishlist.includes(p.id);
+    return `<div class="product-card" id="pc${p.id}">
+      <div class="product-img" onclick="openDetail(${p.id})">
+        <div class="product-tags">${p.tag==='new'?'<div class="tag tag-new">New</div>':p.tag==='sale'?'<div class="tag tag-sale">Sale</div>':'<div class="tag tag-hot">Hot</div>'}</div>
+        <button class="wishlist-btn" onclick="event.stopPropagation();toggleWishlistItem(${p.id})">${inWish?'❤':'🤍'}</button>
+        ${p.emoji}
+      </div>
+      <div class="product-info">
+        <div class="product-cat">${p.cat}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-rating"><span class="stars">${stars(p.rating)}</span><span class="rating-count">(${p.reviews})</span></div>
+        <div class="product-footer">
+          <div><span class="price">${fmt(p.price)}</span>${p.oldPrice?`<span class="price-old">${fmt(p.oldPrice)}</span>`:''}</div>
+          <button class="add-cart-btn" onclick="event.stopPropagation();addToCart(${p.id})">+ Keranjang</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterProducts(){renderProducts();}
+function setFilter(btn,val){
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter=val; renderProducts();
+}
+function filterByCategory(cat){ currentFilter=cat; document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active')); renderProducts(); }
+function sortProducts(){currentSort=document.getElementById('sortSelect').value; renderProducts();}
+
+// ── CART ──
+function saveCart(){ localStorage.setItem('luxe_cart',JSON.stringify(cart)); updateCartBadge(); renderCart(); }
+function updateCartBadge(){
+  const total = cart.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('cartBadge').textContent=total;
+}
+function addToCart(id, qty=1){
+  const p = products.find(x=>x.id===id);
+  const existing = cart.find(x=>x.id===id);
+  if(existing) existing.qty+=qty;
+  else cart.push({id,qty,size:p.sizes?p.sizes[0]:null,color:p.colors?p.colors[0]:null});
+  saveCart();
+  showToast(`✓ ${p.name} ditambahkan ke keranjang`);
+}
+function removeFromCart(id){ cart=cart.filter(x=>x.id!==id); saveCart(); showToast('Produk dihapus dari keranjang'); }
+function changeQty(id,delta){
+  const item=cart.find(x=>x.id===id);
+  if(!item) return;
+  item.qty+=delta;
+  if(item.qty<=0) removeFromCart(id);
+  else saveCart();
+}
+function renderCart(){
+  const el=document.getElementById('cartItems');
+  const footer=document.getElementById('cartFooter');
+  if(!cart.length){
+    el.innerHTML='<div class="cart-empty"><span>🛍</span><div>Keranjang masih kosong</div><div style="font-size:.8rem;margin-top:4px">Tambahkan produk favoritmu!</div></div>';
+    footer.style.display='none'; return;
+  }
+  footer.style.display='block';
+  el.innerHTML=cart.map(item=>{
+    const p=products.find(x=>x.id===item.id);
+    return `<div class="cart-item">
+      <div class="cart-item-img">${p.emoji}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${p.name}</div>
+        <div class="cart-item-price">${fmt(p.price * item.qty)}</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+          <div class="qty-val">${item.qty}</div>
+          <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+        </div>
+      </div>
+      <button class="remove-item" onclick="removeFromCart(${item.id})">✕</button>
+    </div>`;
+  }).join('');
+  const sub=cart.reduce((s,i)=>s+products.find(x=>x.id===i.id).price*i.qty,0);
+  const ship=sub>=500000?0:25000;
+  const total=sub+ship-discount;
+  document.getElementById('cartSubtotal').textContent=fmt(sub);
+  document.getElementById('cartShipping').textContent=ship===0?'Gratis':fmt(ship);
+  document.getElementById('cartDiscount').textContent='- '+fmt(discount);
+  document.getElementById('cartTotal').textContent=fmt(total);
+}
+
+function applyCoupon(){
+  const code=document.getElementById('couponInput').value.toUpperCase().trim();
+  if(code==='LUXE50'){discount=50000;showToast('✓ Kupon LUXE50 berhasil! Hemat Rp 50.000');}
+  else if(code==='NEWUSER'){discount=150000;showToast('✓ Kupon NEWUSER berhasil! Hemat Rp 150.000');}
+  else{showToast('✕ Kode kupon tidak valid');}
+  renderCart();
+}
+
+function toggleCart(){
+  document.getElementById('cartDrawer').classList.toggle('open');
+  document.getElementById('wishlistDrawer').classList.remove('open');
+  document.getElementById('overlay').classList.toggle('open', document.getElementById('cartDrawer').classList.contains('open'));
+  renderCart();
+}
+function closeAll(){
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.getElementById('wishlistDrawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ── WISHLIST ──
+function saveWishlist(){ localStorage.setItem('luxe_wishlist',JSON.stringify(wishlist)); updateWishlistBadge(); }
+function updateWishlistBadge(){
+  const b=document.getElementById('wishlistBadge');
+  b.textContent=wishlist.length;
+  b.style.display=wishlist.length?'flex':'none';
+}
+function toggleWishlistItem(id){
+  const idx=wishlist.indexOf(id);
+  const p=products.find(x=>x.id===id);
+  if(idx>-1){ wishlist.splice(idx,1); showToast(`♡ ${p.name} dihapus dari wishlist`); }
+  else{ wishlist.push(id); showToast(`❤ ${p.name} ditambahkan ke wishlist`); }
+  saveWishlist(); renderProducts(); renderWishlist();
+}
+function renderWishlist(){
+  const el=document.getElementById('wishlistItems');
+  if(!wishlist.length){el.innerHTML='<div class="cart-empty"><span>♡</span><div>Wishlist masih kosong</div></div>';return;}
+  el.innerHTML=wishlist.map(id=>{
+    const p=products.find(x=>x.id===id);
+    return `<div class="cart-item">
+      <div class="cart-item-img">${p.emoji}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${p.name}</div>
+        <div class="cart-item-price">${fmt(p.price)}</div>
+        <button class="add-cart-btn" onclick="addToCart(${p.id})" style="margin-top:8px">+ Keranjang</button>
+      </div>
+      <button class="remove-item" onclick="toggleWishlistItem(${p.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+function toggleWishlist(){
+  document.getElementById('wishlistDrawer').classList.toggle('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.getElementById('overlay').classList.toggle('open',document.getElementById('wishlistDrawer').classList.contains('open'));
+  renderWishlist();
+}
+
+// ── PRODUCT DETAIL ──
+function openDetail(id){
+  const p=products.find(x=>x.id===id);
+  activeDetail=p;
+  document.getElementById('detailBox').innerHTML=`
+    <div class="detail-img">${p.emoji}</div>
+    <div class="detail-content">
+      <div class="detail-cat">${p.cat}</div>
+      <div class="detail-name">${p.name}</div>
+      <div class="detail-rating"><span style="color:var(--gold)">${stars(p.rating)}</span><span>${p.rating} · ${p.reviews} ulasan</span></div>
+      <div class="detail-price">${fmt(p.price)}${p.oldPrice?`<span style="font-size:1rem;color:var(--warm-gray);text-decoration:line-through;margin-left:12px">${fmt(p.oldPrice)}</span>`:''}</div>
+      <div class="detail-desc">${p.desc}</div>
+      ${p.sizes?`<div class="detail-options"><div class="option-label">Ukuran</div><div class="option-btns">${p.sizes.map((s,i)=>`<button class="opt-btn${i===0?' active':''}" onclick="selectOpt(this)">${s}</button>`).join('')}</div></div>`:''}
+      ${p.colors?`<div class="detail-options"><div class="option-label">Warna</div><div class="option-btns">${p.colors.map((c,i)=>`<button class="opt-btn${i===0?' active':''}" onclick="selectOpt(this)">${c}</button>`).join('')}</div></div>`:''}
+      <div class="detail-actions">
+        <button class="detail-add-btn" onclick="addToCart(${p.id});closeDetail()">Tambah ke Keranjang</button>
+        <button class="detail-wish-btn" onclick="toggleWishlistItem(${p.id})">${wishlist.includes(p.id)?'❤':'🤍'}</button>
+      </div>
+      <div style="margin-top:14px;font-size:.75rem;color:var(--warm-gray);display:flex;gap:16px">
+        <span>🚚 Estimasi 1-3 hari kerja</span>
+        <span>↩️ Garansi 30 hari</span>
+      </div>
+    </div>`;
+  document.getElementById('detailPanel').classList.add('open');
+}
+function closeDetail(){ document.getElementById('detailPanel').classList.remove('open'); }
+function selectOpt(btn){ btn.closest('.option-btns').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+
+// ── CHECKOUT ──
+checkoutStep=1;
+function openCheckout(){ toggleCart(); setTimeout(()=>{ document.getElementById('checkoutModal').classList.add('open'); renderCheckoutStep(); }, 300); }
+function closeCheckout(){ document.getElementById('checkoutModal').classList.remove('open'); checkoutStep=1; }
+function renderCheckoutStep(){
+  const c=document.getElementById('checkoutContent');
+  document.querySelectorAll('.step').forEach((s,i)=>{
+    s.classList.toggle('active',i+1===checkoutStep);
+    s.classList.toggle('done',i+1<checkoutStep);
+  });
+  if(checkoutStep===1){
+    c.innerHTML=`<div class="form-grid">
+      <div class="form-group"><label class="form-label">Nama Depan</label><input class="form-input" placeholder="John"></div>
+      <div class="form-group"><label class="form-label">Nama Belakang</label><input class="form-input" placeholder="Doe"></div>
+      <div class="form-group full"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="john@email.com"></div>
+      <div class="form-group full"><label class="form-label">Nomor HP</label><input class="form-input" placeholder="+62 812 xxxx xxxx"></div>
+      <div class="form-group full"><label class="form-label">Alamat Lengkap</label><input class="form-input" placeholder="Jl. Sudirman No. 123, Jakarta Pusat"></div>
+      <div class="form-group"><label class="form-label">Kota</label><input class="form-input" placeholder="Jakarta"></div>
+      <div class="form-group"><label class="form-label">Kode Pos</label><input class="form-input" placeholder="10270"></div>
+    </div>
+    <div class="form-row"><button class="btn-ghost" onclick="closeCheckout()">Batal</button><button class="btn-gold" onclick="nextStep()">Lanjut ke Pembayaran →</button></div>`;
+  } else if(checkoutStep===2){
+    c.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+      ${['Transfer BCA','Transfer Mandiri','GoPay','OVO','DANA','Kartu Kredit','COD'].map((m,i)=>`<label style="display:flex;align-items:center;gap:12px;border:1px solid var(--border);padding:14px 16px;border-radius:3px;cursor:pointer;transition:.2s" class="pay-opt">
+        <input type="radio" name="pay" value="${m}" ${i===0?'checked':''}> <span style="font-size:.88rem;font-weight:500">${m}</span>
+        <span style="margin-left:auto;font-size:.75rem;color:var(--warm-gray)">${i<2?'0% fee':i<5?'Instan':i===5?'1.5% fee':'Bayar di tempat'}</span></label>`).join('')}
+    </div>
+    <div class="form-row"><button class="btn-ghost" onclick="prevStep()">← Kembali</button><button class="btn-gold" onclick="nextStep()">Konfirmasi Pesanan →</button></div>`;
+  } else if(checkoutStep===3){
+    const sub=cart.reduce((s,i)=>s+products.find(x=>x.id===i.id).price*i.qty,0);
+    c.innerHTML=`<div style="background:white;border:1px solid var(--border);border-radius:3px;padding:20px;margin-bottom:20px">
+      ${cart.map(i=>{const p=products.find(x=>x.id===i.id);return`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem"><span>${p.emoji} ${p.name} ×${i.qty}</span><span style="font-weight:600">${fmt(p.price*i.qty)}</span></div>`;}).join('')}
+      <div style="display:flex;justify-content:space-between;margin-top:14px;font-weight:700;font-size:1rem"><span>Total</span><span style="color:var(--gold)">${fmt(sub-discount+(sub>=500000?0:25000))}</span></div>
+    </div>
+    <div class="form-row"><button class="btn-ghost" onclick="prevStep()">← Kembali</button><button class="btn-gold" onclick="placeOrder()">Pesan Sekarang ✦</button></div>`;
+  }
+}
+function nextStep(){ if(checkoutStep<3){checkoutStep++;renderCheckoutStep();} }
+function prevStep(){ if(checkoutStep>1){checkoutStep--;renderCheckoutStep();} }
+function placeOrder(){
+  const orderNum='LXE'+Date.now().toString().slice(-8);
+  document.getElementById('checkoutContent').innerHTML=`<div class="order-success">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Pesanan Berhasil!</div>
+    <div class="success-desc">Terima kasih telah berbelanja di LUXE Store. Pesanan Anda sedang diproses dan akan segera dikirimkan ke alamat yang ditentukan.</div>
+    <div class="order-num">Order #${orderNum}</div>
+    <div style="margin-top:20px;font-size:.82rem;color:var(--warm-gray)">Konfirmasi dikirim ke email Anda</div>
+  </div>`;
+  document.querySelectorAll('.step').forEach(s=>{s.classList.add('done');s.classList.remove('active');});
+  cart=[]; saveCart(); discount=0;
+  setTimeout(()=>{closeCheckout();showToast('🎉 Pesanan #'+orderNum+' berhasil dibuat!');},3000);
+}
+
+// ── NEWSLETTER ──
+function subscribeEmail(){
+  const email=document.getElementById('emailInput').value;
+  if(!email||!email.includes('@')){showToast('✕ Masukkan email yang valid');return;}
+  showToast('✓ Terima kasih! Cek email Anda.');
+  document.getElementById('emailInput').value='';
+}
+
+// ── NAV ──
+function toggleNav(){
+  const nav=document.getElementById('mainNav');
+  nav.style.display=nav.style.display==='flex'?'none':'flex';
+  nav.style.flexDirection='column';
+  nav.style.position='absolute';
+  nav.style.top='72px';
+  nav.style.left='0';
+  nav.style.right='0';
+  nav.style.background='var(--surface)';
+  nav.style.padding='20px 40px';
+  nav.style.borderBottom='1px solid var(--border)';
+  nav.style.gap='16px';
+  nav.style.zIndex='800';
+}
+
+// ── INIT ──
+renderProducts();
+updateCartBadge();
+updateWishlistBadge();
+
+// Smooth scroll for hero CTA
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const target=document.querySelector(a.getAttribute('href'));
+    if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+});
+</script>
+</body>
+</html>
